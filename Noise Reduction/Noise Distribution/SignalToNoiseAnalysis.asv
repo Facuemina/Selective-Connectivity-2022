@@ -1,0 +1,115 @@
+%% Signal-To-Noise Analisis
+clear all; close all;
+
+%% Add Paths
+Folder_delimiter{1} = '\'; %Windows
+Folder_delimiter{2} = '/'; %Linux
+%CHOOSE:
+fd_choose = 1;
+
+restoredefaultpath
+
+Actual_directory = split(cd,Folder_delimiter{fd_choose});
+fx_path = Actual_directory(1:end-1); fx_path(length(fx_path)+1) = {'fx'}; fx_path = join(fx_path,Folder_delimiter{fd_choose});
+addpath(fx_path{1});
+%% Define parameters
+N        = 2000;                                 %Number of neurons
+c        = 20;                                   %Number of pre-synaptic connections per neuron
+Num2Sto  = 100;                                  %Maximum pattern load to study
+pat_step = 1;                                    %Steps to make between each evaluation
+Patterns_To_Evaluate = round(1:pat_step:Num2Sto);%Patterns to evaluate
+Pat      = sign(rand(N,N)-0.5);                  %Matrix storing random patterns
+%% Define Outputs
+
+Outputs = cell(1,3);
+for out = 1:length(Outputs)
+    %Cells with values and distributions. Each element of the cell contains
+    %a vector whose elements indicate:
+    Outputs{out}.NoiseSgnl_Vals     = cell(1,length(Patterns_To_Evaluate));  %the value a aligned noise term can take
+    Outputs{out}.NoiseSgnl_Dist     = cell(1,length(Patterns_To_Evaluate));  %the number of terms corresponding to a given value of the aligned noise distribution
+    %Arrays with mean values and standard deviation (STD)
+    Outputs{out}.Mean_NoiseSgnl     = zeros(1,length(Patterns_To_Evaluate)); %Mean aligned noise 
+    Outputs{out}.Mean_NoiseSgnl_err = zeros(1,length(Patterns_To_Evaluate)); %Std of mean aligned noise
+    Outputs{out}.Mean_StdSgnl       = zeros(1,length(Patterns_To_Evaluate)); %Mean aligned noise std
+    Outputs{out}.Mean_StdSgnl_err   = zeros(1,length(Patterns_To_Evaluate)); %Std of mean aligned noise std
+    Outputs{out}.frac               = zeros(1,length(Patterns_To_Evaluate)); %fraction of patterns the network can retrive
+end
+
+%% Start Iterations
+for out = 1:length(Outputs)
+    for pat = 1:length(Patterns_To_Evaluate)    
+        if out<3
+            if out == 1
+                epsilon = Patterns_To_Evaluate(pat)/c;
+            else
+                epsilon = 0;
+            end
+            [NoiseSgnl,Outputs{out}.frac(pat)] = Noise_And_Std(N,c,Pat(1:Patterns_To_Evaluate(pat),:),epsilon,0);
+        else
+            [NoiseSgnl,Outputs{out}.frac(pat)] = Noise_And_Std_Rand(N,c,Pat(1:Patterns_To_Evaluate(pat),:),0);
+        end
+
+        NoiseSgnl = round(NoiseSgnl,5); %round values in order to avoid numerical errors
+        Outputs{out}.NoiseSgnl_Vals{pat} = unique(NoiseSgnl);
+        Outputs{out}.NoiseSgnl_Dist{pat} = zeros(1,length(Outputs{out}.NoiseSgnl_Vals{pat}));
+        for i = 1:length(Outputs{out}.NoiseSgnl_Vals{pat})
+            Outputs{out}.NoiseSgnl_Dist{pat}(i) = length(find(NoiseSgnl == Outputs{out}.NoiseSgnl_Vals{pat}(i)));
+        end
+        Outputs{out}.Mean_NoiseSgnl(pat)     = mean(mean(NoiseSgnl,1));
+        Outputs{out}.Mean_StdSgnl(pat)       = mean(std(NoiseSgnl,1));
+        Outputs{out}.Mean_NoiseSgnl_err(pat) = std(mean(NoiseSgnl,1));
+        Outputs{out}.Mean_StdSgnl_err(pat)   = std(std(NoiseSgnl,1));
+        
+        disp([num2str(pat),'--',num2str(length(Patterns_To_Evaluate))])
+    end
+    
+end
+
+Data_STNA.Patterns                = Pat;
+Data_STNA.parameters.N            = N;
+Data_STNA.parameters.c            = c;
+Data_STNA.parameters.Num2Sto      = Num2Sto;
+Data_STNA.parameters.Patterns_To_Evaluate  = Patterns_To_Evaluate;
+Data_STNA.parameters.pat_step     = pat_step;
+Data_STNA.Epsilon_Optimization    = Outputs{1};
+Data_STNA.NonEpsilon_Optimization = Outputs{2};
+Data_STNA.Random_NonOptimization  = Outputs{3};
+save('Data_STNA_N2000.mat','Data_STNA')
+%% Define Functions
+function [Noise_Sgnl,frac] = Noise_And_Std(N,c,Pattern,epsilon,evaluate)
+
+    W     = Pattern'*Pattern/c;
+    Noise_Sgnl = zeros(length(Pattern(:,1)),N,'double');
+    %Useful matrices
+    Matrix = zeros(N,N-1,'double');
+    C              = zeros(N,N,'double');
+    %Indices for lower and upper triangular parts of matrices
+    LowerTriC      = find(tril(ones(size(C)),-1));   
+    UpperTriC      = find(triu(ones(size(C)),1));
+    LowerTriMatrix = find(tril(ones(size(Matrix)),-1));
+    UpperTriMatrix = find(triu(ones(size(Matrix))));
+    %Define Initial Temperature / Create Noise Matrices and optimize
+    Matrix       = Optimize_Connectivity(N,c,length(Pattern(:,1)),W,Pattern,epsilon,Matrix);
+    C(LowerTriC) = Matrix(LowerTriMatrix);
+    C(UpperTriC) = Matrix(UpperTriMatrix);
+    [~, frac]    = overlap(Pattern,length(Pattern(:,1)),c,C,evaluate);
+    
+end
+
+%%
+function [Noise_Sgnl,frac] = Noise_And_Std_Rand(N,c,Pat,evaluate)
+
+    W     = Pat'*Pat/c;
+    Noise_Sgnl = zeros(length(Pat(:,1)),N,'double');
+    %Useful matrices
+    C = zeros(N,N);
+    v = [ones(1,c),zeros(1,N-c-1)];
+    for i = 1:N
+        C(i,1:N ~=i) = v(randperm(N-1));
+    end
+    parfor row = 1:N                       
+        Omega = W(row,:).*Pat - Pat(:,row)/c;   
+        Noise_Sgnl(:,row) = (Omega*C(row,:)').*Pat(:,row);
+    end    
+    [~, frac] = overlap(Pat,length(Pat(:,1)),c,C,evaluate);    
+end
