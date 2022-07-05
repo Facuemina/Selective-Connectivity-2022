@@ -6,18 +6,8 @@ function [C,MeanConnectivity,StdConnectivity,PEFF,iterations] = OnlineAlgorithm(
 % Patterns = Matrix containing random patterns
 % DeltaP   = number of patterns added after successfull retrival condition
 %            is met
-% e        = array that defines epsilon parameter. Given c,p :
-%            epsilon = e*[p/c,1,c]'
-
+% e        = array that defines epsilon parameter
 %% OUTPUTS
-% C = optimized connectivity matrix
-% MeanConnectivity = mean pre-synaptic connections per neuron
-% StdConnectivity  = standard deviation of mean pre-synaptic connections 
-%                    per neuron
-% PEFF             = effective number of patterns network can successfully
-%                    retrieve
-% iterations       = number of trial-and-error per neuron before pattern
-%                    stability check
 
 %% Start Online Algorithm
 %Num2Sto = initial pattern load
