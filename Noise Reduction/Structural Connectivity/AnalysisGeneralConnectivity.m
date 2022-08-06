@@ -1,14 +1,28 @@
 %Test Topology Mod1
 clear all; close all;
+%% Add Paths
 restoredefaultpath
-addpath(genpath('C:\Users\Facundo\Desktop\UBA\FÍSICA\Tesis\Capitulos en limpio\Capitulo 1 - Optimizaciones\Optimizacion SA\Hopfield\Epsilon No Nulo\Resultados Kluster\Resultados Mod 1 - Epsilon'))
 
-% load('LoadingCapacity_C_N5000_Epsilon.mat')
+Folder_delimiter{1} = '\'; %Windows
+Folder_delimiter{2} = '/'; %Linux
+%CHOOSE:
+fd_choose = 1;
+
+Actual_directory = split(cd,Folder_delimiter{fd_choose});
+fx_path    = Actual_directory(1:end-2); fx_path(length(fx_path)+1) = {'fx'}; fx_path = join(fx_path,Folder_delimiter{fd_choose}); %Add '\fx' folder to path
+addpath(fx_path{1});
+
+data_path = Actual_directory(1:end-3); data_path(length(data_path)+1) = {'Data-Selective-Connectivity-2022'};
+data_path(length(data_path)+1) = {'Noise Reduction'}; data_path(length(data_path)+1) = {'N 5000'};
+data_path = join(data_path,Folder_delimiter{fd_choose});
+addpath(genpath(data_path{1}))
+%%
+
 for i = 1:5
-    load(['LoadingCapacity_C_N5000_Epsilon_',num2str(i),'.mat'])
+    load(['LoadingCapacity_C_N5000_',num2str(i),'.mat'])
 end
 
-LC_DATA = {LoadingCapacity_C_N5000_Epsilon_1,LoadingCapacity_C_N5000_Epsilon_2,LoadingCapacity_C_N5000_Epsilon_3,LoadingCapacity_C_N5000_Epsilon_4,LoadingCapacity_C_N5000_Epsilon_5};
+LC_DATA = {LoadingCapacity_C_N5000_1,LoadingCapacity_C_N5000_2,LoadingCapacity_C_N5000_3,LoadingCapacity_C_N5000_4,LoadingCapacity_C_N5000_5};
 
 DATA5000_EPC.GENERAL_Weight_Values = cell(1,4);
 DATA5000_EPC.GENERAL_Weight_Distr  = cell(1,4);

@@ -10,7 +10,7 @@ fd_choose = 1;
 restoredefaultpath
 
 Actual_directory = split(cd,Folder_delimiter{fd_choose});
-fx_path = Actual_directory(1:end-1); fx_path(length(fx_path)+1) = {'fx'}; fx_path = join(fx_path,Folder_delimiter{fd_choose});
+fx_path = Actual_directory(1:end-2); fx_path(length(fx_path)+1) = {'fx'}; fx_path = join(fx_path,Folder_delimiter{fd_choose});
 addpath(fx_path{1});
 %% Define parameters
 N        = 2000;                                 %Number of neurons
