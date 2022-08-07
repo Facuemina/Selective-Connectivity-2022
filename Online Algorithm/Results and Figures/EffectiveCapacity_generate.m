@@ -10,7 +10,7 @@ fd_choose = 1;
 Actual_directory = split(cd,Folder_delimiter{fd_choose});
 fx_path = Actual_directory(1:end-2); fx_path(length(fx_path)+1) = {'fx'}; fx_path = join(fx_path,Folder_delimiter{fd_choose}); %Add '\fx' folder to path
 addpath(fx_path{1});
-data_path = Actual_directory(1:end-2); data_path(end+1:end+3) = {'Signal Reinforcement';'Data';'Effective_Capacity'};
+data_path = Actual_directory(1:end-2); data_path(end+1:end+3) = {'Data';'Online Algorithm';'Effective_Capacity'};
 data_path = join(data_path,Folder_delimiter{fd_choose}); addpath(data_path{1});
 %%
 for i = 1:4
@@ -27,13 +27,9 @@ for data = 1:length(DATA)
     disp(['Listo! ',num2str(data)])
 end
     
-save('PeffData.mat','PeffData')
+save([data_path{1},'PeffData.mat'],'PeffData')
     
-    
-    
-    
-    
-    
+%%
 function [peff] = effective_storage(Data,opt)
     peff = zeros(1,length(Data.Pmax));
     for i = 1:length(Data.Pmax)
