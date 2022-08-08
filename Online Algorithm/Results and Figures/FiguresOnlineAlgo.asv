@@ -72,18 +72,23 @@ set(gca,'FontSize',25)
 
 %% Add inset
 % create smaller axes in top right, and plot on it
-axes('Position',[.7 .7 .2 .2])
+xstart=.6;
+xend=.8;
+ystart=.6;
+yend=.8;
+% axes('position',[xstart ystart xend-xstart yend-ystart ])
+% axes('Position',[.7 .7 .2 .2])
+axes('Position',[.7 .7 .4 .2])
 box on
 
 errorbar(LoadingCapacity_C_N2000_Epsilon_Paper.C,Peff,Peff_std,'color',[0.85,0.325,0.098],'LineWidth',2)
 hold on
+E = 13000;
 for i = 1:length(Data)
     plot(Data{i}.Cmean(1:end),Data{i}.peff(1:end),'color',colors(i,:),'LineWidth',2)
 end
 xlim([440,460])
 ylim([650,800])
-xlabel('$\langle c\rangle$','Interpreter','latex')
-ylabel('$p_{eff}$','Interpreter','latex')
 set(gca,'FontSize',20)
 %%
 function plot_fill_space(X_Data,Y_Data,Y_err_Data,color,LW,log_true)
