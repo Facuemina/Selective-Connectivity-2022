@@ -48,7 +48,7 @@ Peff_std = std([LoadingCapacity_C_N2000_Epsilon_Paper.Pmax;LoadingCapacity_C_N20
     LoadingCapacity_C_N2000_Epsilon_Paper_3.Pmax;LoadingCapacity_C_N2000_Epsilon_Paper_4.Pmax]);
 
 figure(1)
-
+subplot(2,1,1)
 IND = unique([1:2:length(PeffData.peff),30]); Connectivity = round(linspace(20,1998,30));
 errorbar(LoadingCapacity_C_N2000_Epsilon_Paper.C,Peff,Peff_std,'color',[0.85,0.325,0.098],'LineWidth',2)
 hold on
@@ -75,6 +75,7 @@ set(gca,'FontSize',25)
 axes('Position',[.7 .7 .2 .2])
 box on
 
+subplot(4,1,3)
 errorbar(LoadingCapacity_C_N2000_Epsilon_Paper.C,Peff,Peff_std,'color',[0.85,0.325,0.098],'LineWidth',2)
 hold on
 for i = 1:length(Data)
